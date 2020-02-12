@@ -23,7 +23,7 @@ def proxy_to_local(name, short_url):
 
     if local_ngrok_url is None:
 
-        return render_template_string("index.html", title="Unable to find local ngrok by given name", user={"username": "Error"})
+        return render_template("index.html", title="Unable to find local ngrok by given name", user={"username": "Error"})
 
     response = requests.get(local_ngrok_url + "/" + short_url)
 
@@ -37,7 +37,7 @@ def add_local_proxy():
 
     try:
 
-        input_data = request.json()
+        input_data = request.json
 
         app_secret = os.environ.get("APP_SECRET")
 
