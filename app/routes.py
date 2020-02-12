@@ -19,7 +19,7 @@ def index():
 @app.route('/proxy/<string:name>/<string:short_url>')
 def proxy_to_local(name, short_url):
 
-    local_ngrok_url = db.session.query(LocalNgrok.ngrok_url).filter(LocalNgrok.name == name).first()
+    local_ngrok_url = db.session.query(LocalNgrok.ngrok_url).filter(LocalNgrok.name == name).scalar()
 
     if local_ngrok_url is None:
 
