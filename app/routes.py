@@ -16,17 +16,21 @@ def index():
     return render_template('index.html', title='Home', user=user)
 
 
-@app.route('/proxy/<string:short_url>')
-def proxy_to_local(short_url):
+@app.route('/proxy/<string:name>/<string:short_url>')
+def proxy_to_local(name, short_url):
 
-    local_ngrok_url = os.environ.get('LOCAL_NGROK_URL')
+    local_ngrok_url = db.session.query(LocalNgrok.ngrok_url).filter(LocalNgrok.name == name).first()
+
+    if local_ngrok_url is None:
+
+        return render_template_string("index.html", title="Unable to find local ngrok by given name", user={"username": "Error"})
 
     response = requests.get(local_ngrok_url + "/" + short_url)
 
     return render_template_string(response.text)
 
 
-@app.route('/api/proxy')
+@app.route('/api/proxy', methods=["POST"])
 def add_local_proxy():
 
     error = 202
