@@ -15,7 +15,7 @@ def index():
     return render_template('index.html', title='Home', user=user)
 
 
-@app.route('/proxy/<str:short_url>')
+@app.route('/proxy/<string:short_url>')
 def proxy_to_local(short_url):
 
     local_ngrok_url = os.environ.get('LOCAL_NGROK_URL')
