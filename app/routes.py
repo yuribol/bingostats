@@ -25,9 +25,10 @@ def proxy_to_local(name, short_url):
 
         return render_template("index.html", title="Unable to find local ngrok by given name", user={"username": "Error"})
 
-    print(request.headers)
+    # Forwarding user agent only
+    headers = {"User-Agent": request.headers.get("user-agent")}
 
-    response = requests.get(local_ngrok_url + "/" + short_url, headers=request.headers)
+    response = requests.get(local_ngrok_url + "/" + short_url, headers=headers)
 
     return render_template_string(response.text)
 
