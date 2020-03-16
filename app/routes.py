@@ -28,7 +28,7 @@ def proxy_to_local(name, short_url):
     # Forwarding user agent only
     headers = {"User-Agent": request.headers.get("user-agent")}
 
-    response = requests.get(local_ngrok_url + "/" + short_url, headers=headers)
+    response = requests.get(local_ngrok_url + "/api/" + short_url, headers=headers)
 
     return render_template_string(response.text)
 
