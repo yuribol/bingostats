@@ -33,6 +33,23 @@ def proxy_to_local(name, short_url):
     return render_template_string(response.text)
 
 
+@app.route('/proxy/<string:name>/api/<string:short_url>')
+def proxy_to_local_api_in_path(name, short_url):
+
+    local_ngrok_url = db.session.query(LocalNgrok.ngrok_url).filter(LocalNgrok.name == name).scalar()
+
+    if local_ngrok_url is None:
+
+        return render_template("index.html", title="Unable to find local ngrok by given name", user={"username": "Error"})
+
+    # Forwarding user agent only
+    headers = {"User-Agent": request.headers.get("user-agent")}
+
+    response = requests.get(local_ngrok_url + "/api/" + short_url, headers=headers)
+
+    return render_template_string(response.text)
+
+
 @app.route('/api/proxy', methods=["POST"])
 def add_local_proxy():
 
