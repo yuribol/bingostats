@@ -16,6 +16,12 @@ def index():
     return render_template('index.html', title='Home', user=user)
 
 
+@app.route("/heatmap")
+def heatmap_prototype():
+
+    return render_template("heatmap.html")
+
+
 @app.route('/proxy/<string:name>/<string:short_url>')
 def proxy_to_local(name, short_url):
 
