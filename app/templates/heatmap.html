@@ -1,0 +1,213 @@
+<html>
+  <head>
+
+    <script src="https://cdn.anychart.com/releases/8.9.0/js/anychart-core.min.js"></script>
+    <script src="https://cdn.anychart.com/releases/8.9.0/js/anychart-heatmap.min.js"></script>
+
+  </head>
+  <body>
+    <!--
+    BEFORE RUNNING:
+    ---------------
+    1. If not already done, enable the Google Sheets API
+       and check the quota for your project at
+       https://console.developers.google.com/apis/api/sheets
+    2. Get access keys for your application. See
+       https://developers.google.com/api-client-library/javascript/start/start-js#get-access-keys-for-your-application
+    3. For additional information on authentication, see
+       https://developers.google.com/sheets/api/quickstart/js#step_2_set_up_the_sample
+    -->
+    <script>
+    function makeApiCall() {
+      var params = {
+        // The ID of the spreadsheet to retrieve data from.
+        spreadsheetId: '1I316m4WwU4TrfhpVmUQoxZTDuAUYvQt7dpfu7K0-tjw',  // TODO: Update placeholder value.
+
+        // The A1 notation of the values to retrieve.
+        range: 'Sheet1!A2:D100',  // TODO: Update placeholder value.
+
+        includeGridData: false,
+
+        // How values should be represented in the output.
+        // The default render option is ValueRenderOption.FORMATTED_VALUE.
+        // valueRenderOption: 'FORMATTED_VALUE',  // TODO: Update placeholder value.
+
+        // How dates, times, and durations should be represented in the output.
+        // This is ignored if value_render_option is
+        // FORMATTED_VALUE.
+        // The default dateTime render option is [DateTimeRenderOption.SERIAL_NUMBER].
+        // dateTimeRenderOption: '',  // TODO: Update placeholder value.
+      };
+
+      var request = gapi.client.sheets.spreadsheets.values.get(params);
+      request.then(function(response) {
+        // TODO: Change code below to process the `response` object:
+        console.log(response.result);
+
+        var calendarMapping = {
+          "January FY20": 1,
+          "February FY20": 2,
+          "March FY20": 3,
+          "April FY20": 4,
+          "May FY20": 5,
+          "June FY20": 6,
+          "July FY20": 7,
+          "August FY20": 8,
+          "September FY20": 9,
+          "October FY20": 10,
+          "November FY20": 11,
+          "December FY20": 12
+        }, monthCompare = function(a, b) {
+          console.log(a);
+          console.log(b);
+          var monthA = calendarMapping[a[1]],
+            monthB = calendarMapping[b[1]];
+
+          console.log(monthA);
+          console.log(monthB);
+
+          if (monthA < monthB) {
+            return -1;
+          }
+
+          if (monthA > monthB) {
+            return 1;
+          }
+
+          return 0;
+        };
+
+        var statusToHeatMapping = {
+          Green: 100,
+          Yellow: 50,
+          Red: 0,
+          Churned: 0
+        };
+
+        var rowCounters = {};
+
+        var item, filteredValues = [], heatmapData = []; // x, value, heat;
+
+        for (var i = 0; i < response.result.values.length; i++) {
+
+          item = response.result.values[i];
+
+          if (!!item[0]) {
+
+            filteredValues.push(item);
+
+          }
+
+        }
+
+        filteredValues.sort(monthCompare);
+
+        for (var i = 0; i < filteredValues.length; i++) {
+
+          item = filteredValues[i];
+
+          if (!rowCounters[item[1]]) {
+            rowCounters[item[1]] = 0;
+          }
+
+          rowCounters[item[1]] += 1;
+
+          heatmapData.push({
+            x: item[1],
+            y: rowCounters[item[1]],
+            customClientName: item[0],
+            customContractValue: item[2],
+            // value: item[2],
+            heat: statusToHeatMapping[item[3]]
+          });
+        }
+
+        console.log(filteredValues);
+        console.log(heatmapData);
+
+        // create a chart and set the data
+        var chart = anychart.heatMap(heatmapData);
+
+        chart.labels().useHtml(true);
+
+        chart.labels().format(function() {
+          var label = "<div><div>" + this.getData("customClientName") + "</div><br>" +
+            "<div>" + this.getData("customContractValue") + "</div></div>";
+
+          return label;
+        });
+
+        var customColorScale = anychart.scales.ordinalColor();
+        customColorScale.ranges([
+          {less: 20},
+          {from: 20, to: 60},
+          {greater: 60}
+        ]);
+        customColorScale.colors(["red", "yellow", "green"]);
+
+        // set the color scale as the color scale of the chart
+        chart.colorScale(customColorScale);
+
+        // set the container id
+        chart.container("container");
+
+        // initiate drawing the chart
+        chart.draw();
+
+      }, function(reason) {
+        console.error('error: ' + reason.result.error.message);
+      });
+    }
+
+    function initClient() {
+      var API_KEY = '';  // TODO: Update placeholder with desired API key.
+
+      var CLIENT_ID = '114266064309-lngkn7g51qmmvqepef3p5hb9e3eaksho.apps.googleusercontent.com';  // TODO: Update placeholder with desired client ID.
+
+      // TODO: Authorize using one of the following scopes:
+      //   'https://www.googleapis.com/auth/drive'
+      //   'https://www.googleapis.com/auth/drive.file'
+      //   'https://www.googleapis.com/auth/drive.readonly'
+      //   'https://www.googleapis.com/auth/spreadsheets'
+      //   'https://www.googleapis.com/auth/spreadsheets.readonly'
+      var SCOPE = 'https://www.googleapis.com/auth/spreadsheets.readonly';
+
+      gapi.client.init({
+        'apiKey': API_KEY,
+        'clientId': CLIENT_ID,
+        'scope': SCOPE,
+        'discoveryDocs': ['https://sheets.googleapis.com/$discovery/rest?version=v4'],
+      }).then(function() {
+        gapi.auth2.getAuthInstance().isSignedIn.listen(updateSignInStatus);
+        updateSignInStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
+      });
+    }
+
+    function handleClientLoad() {
+      gapi.load('client:auth2', initClient);
+    }
+
+    function updateSignInStatus(isSignedIn) {
+      if (isSignedIn) {
+        makeApiCall();
+      }
+    }
+
+    function handleSignInClick(event) {
+      gapi.auth2.getAuthInstance().signIn();
+    }
+
+    function handleSignOutClick(event) {
+      gapi.auth2.getAuthInstance().signOut();
+    }
+    </script>
+    <script async defer src="https://apis.google.com/js/api.js"
+      onload="this.onload=function(){};handleClientLoad()"
+      onreadystatechange="if (this.readyState === 'complete') this.onload()">
+    </script>
+    <button id="signin-button" onclick="handleSignInClick()">Sign in</button>
+    <button id="signout-button" onclick="handleSignOutClick()">Sign out</button>
+
+    <div id="container"></div>
+  </body>
+</html>
