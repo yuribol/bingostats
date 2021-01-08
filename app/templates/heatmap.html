@@ -21,7 +21,7 @@
     function makeApiCall() {
       var params = {
         // The ID of the spreadsheet to retrieve data from.
-        spreadsheetId: '1I316m4WwU4TrfhpVmUQoxZTDuAUYvQt7dpfu7K0-tjw',  // TODO: Update placeholder value.
+        spreadsheetId: document.getElementById("spreadsheetId").value || '1I316m4WwU4TrfhpVmUQoxZTDuAUYvQt7dpfu7K0-tjw',  // TODO: Update placeholder value.
 
         // The A1 notation of the values to retrieve.
         range: 'Sheet1!A2:D100',  // TODO: Update placeholder value.
@@ -58,13 +58,8 @@
           "November FY20": 11,
           "December FY20": 12
         }, monthCompare = function(a, b) {
-          console.log(a);
-          console.log(b);
           var monthA = calendarMapping[a[1]],
             monthB = calendarMapping[b[1]];
-
-          console.log(monthA);
-          console.log(monthB);
 
           if (monthA < monthB) {
             return -1;
@@ -121,9 +116,6 @@
             heat: statusToHeatMapping[item[3]]
           });
         }
-
-        console.log(filteredValues);
-        console.log(heatmapData);
 
         // create a chart and set the data
         var chart = anychart.heatMap(heatmapData);
@@ -207,6 +199,11 @@
     </script>
     <button id="signin-button" onclick="handleSignInClick()">Sign in</button>
     <button id="signout-button" onclick="handleSignOutClick()">Sign out</button>
+
+    <div>
+        <label for="spreadsheetId">Spreadheet ID:</label>
+        <input type="text" id="spreadsheetId" name="spreadsheetId">
+    </div>
 
     <div id="container"></div>
   </body>
